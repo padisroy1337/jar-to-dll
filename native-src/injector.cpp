@@ -20,7 +20,8 @@
 static HMODULE GetJvmDll() {
   const auto jvm_dll = GetModuleHandleW(L"jvm.dll");
   if (!jvm_dll) {
-    Error(L"Can't get jvm.dll handle");
+    // Error(L"Can't get jvm.dll handle");
+    // Removed message box
   }
   return jvm_dll;
 }
@@ -31,7 +32,8 @@ static GetCreatedJavaVMs GetGetCreatedJavaVMsProc(HMODULE jvm_dll) {
   const auto get_created_java_vms_raw_proc =
       GetProcAddress(jvm_dll, "JNI_GetCreatedJavaVMs");
   if (!get_created_java_vms_raw_proc) {
-    Error(L"Can't get JNI_GetCreatedJavaVMs proc");
+    // Error(L"Can't get JNI_GetCreatedJavaVMs proc");
+    // Removed message box
   }
   return reinterpret_cast<GetCreatedJavaVMs>(get_created_java_vms_raw_proc);
 }
@@ -45,7 +47,8 @@ static JavaVM* GetJVM() {
   get_created_java_vms(jvms, n_vms, &n_vms);
 
   if (n_vms == 0) {
-    Error(L"Can't get JVM");
+    // Error(L"Can't get JVM");
+    // Removed message box
   }
 
   return jvms[0];
@@ -57,20 +60,23 @@ static void GetJNIEnv(JavaVM* jvm, JNIEnv*& jni_env) {
   jvm->GetEnv(reinterpret_cast<void**>(&jni_env), JNI_VERSION_1_8);
 
   if (!jni_env) {
-    Error(L"Can't get JNIEnv");
+    // Error(L"Can't get JNIEnv");
+    // Removed message box
   }
 }
 
 static jclass DefineOrGetInjector(JNIEnv* jni_env) {
   const auto existing_injector_class = jni_env->FindClass(INJECTOR_CLASS_NAME);
   if (existing_injector_class) {
-    ShowMessage(L"Injector class is already presented in jvm, using it");
+    // ShowMessage(L"Injector class is already presented in jvm, using it");
+    // Removed message box
     return existing_injector_class;
   }
   const auto injector_class = jni_env->DefineClass(
       nullptr, nullptr, injector_class_data, sizeof(injector_class_data));
   if (!injector_class) {
-    Error(L"Failed to define injector class");
+    // Error(L"Failed to define injector class");
+    // Removed message box
   }
   return injector_class;
 }
@@ -78,19 +84,22 @@ static jclass DefineOrGetInjector(JNIEnv* jni_env) {
 static jobjectArray GetJarClassesArray(JNIEnv* jni_env) {
   const auto byte_array_class = jni_env->FindClass("[B");
   if (!byte_array_class) {
-    Error(L"Failed to get byte array class");
+    // Error(L"Failed to get byte array class");
+    // Removed message box
   }
   const auto jar_classes_array = jni_env->NewObjectArray(
       sizeof(jar_classes_sizes) / sizeof(jar_classes_sizes[0]),
       byte_array_class, nullptr);
   if (!jar_classes_array) {
-    Error(L"Failed to create jar classes array");
+    // Error(L"Failed to create jar classes array");
+    // Removed message box
   }
   for (size_t i = 0;
        i < sizeof(jar_classes_sizes) / sizeof(jar_classes_sizes[0]); i++) {
     const auto class_byte_array = jni_env->NewByteArray(jar_classes_sizes[i]);
     if (!class_byte_array) {
-      Error(L"Failed to create class byte array");
+      // Error(L"Failed to create class byte array");
+      // Removed message box
     }
     jni_env->SetByteArrayRegion(class_byte_array, 0, jar_classes_sizes[i],
                                 jar_classes_data[i]);
@@ -106,16 +115,19 @@ static void CallInjector(JNIEnv* jni_env, jclass injector_class,
   const auto inject_method_id =
       jni_env->GetStaticMethodID(injector_class, "inject", "([[B)V");
   if (!inject_method_id) {
-    Error(L"Failed to find inject method ID");
+    // Error(L"Failed to find inject method ID");
+    // Removed message box
   }
 
   jni_env->CallStaticVoidMethod(
       injector_class, inject_method_id, jar_classes_array);
-  ShowMessage(L"Native part ready, now java part is injecting");
+  // ShowMessage(L"Native part ready, now java part is injecting");
+  // Removed message box
 }
 
 void RunInjector() {
-  ShowMessage(L"Starting");
+  // ShowMessage(L"Starting");
+  // Removed message box
 
   const auto jvm = GetJVM();
 
